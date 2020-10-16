@@ -22,6 +22,8 @@
     Point(8, 8)的对角点有：[(1, 8), (3, 6), (6, 5), (7, 2)]
 */
 
+use std::cell::{Ref, RefCell};
+
 pub struct Solution{}
 
 struct Point<'a> {
@@ -40,7 +42,7 @@ impl std::fmt::Display for Point<'_> {
 }
 
 impl Solution {
-    fn determine_x_reach(point: & Point, pts_matrix: & Vec<Vec<Point>>) -> i16 {
+    fn determine_x_reach(point: & Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             if point.y > 0 && pts_matrix[point.x][point.y-1].x_reach >= 0 { pts_matrix[point.x][point.y-1].x_reach }
@@ -48,7 +50,7 @@ impl Solution {
         }
     }
 
-    fn determine_y_reach(point: & Point, pts_matrix: & Vec<Vec<Point>>) -> i16 {
+    fn determine_y_reach(point: & Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             if point.x > 0 && pts_matrix[point.x-1][point.y].y_reach >= 0 { pts_matrix[point.x-1][point.y].y_reach }
@@ -56,8 +58,9 @@ impl Solution {
         }
     }
 
-    fn determine_diagonal_pts<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point<'a>>>) -> Vec<&'a Point<'a>> {
-        let mut diagonal_pts: Vec<&'a Point> = vec![];
+    // 确定某个节点的对角点
+    fn determine_diagonal_pts(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Vec<Point> {
+        let mut diagonal_pts: Vec<Point> = vec![];
         if point.x == 0 && point.y == 0 {
             if point.ch == '1' {
                 diagonal_pts.push(point)
@@ -81,20 +84,20 @@ impl Solution {
     }
 
     pub fn maximal_rectangle(matrix: Vec<Vec<char>>) -> i32 {
-        let mut pts_matrix: Vec<Vec<Point>> = Vec::new();
+        let pts_matrix: RefCell<Vec<Vec<Point>>> = RefCell::new(Vec::new());
 
         for (i, row) in matrix.iter().enumerate() {
-            pts_matrix.push(vec![]);
+            pts_matrix.borrow_mut().push(vec![]);
             for (j, col) in row.iter().enumerate() {
                 let mut p = Point{ch: *col, x:i, y:j, diagonal_pts: vec![], x_reach: -1, y_reach: -1};
-                p.x_reach = Solution::determine_x_reach(&p, &pts_matrix);
-                p.y_reach = Solution::determine_y_reach(&p, &pts_matrix);
-                p.diagonal_pts = Solution::determine_diagonal_pts(&p, &pts_matrix);
+                p.x_reach = Solution::determine_x_reach(&p, pts_matrix.borrow());
+                p.y_reach = Solution::determine_y_reach(&p, pts_matrix.borrow());
+                p.diagonal_pts = Solution::determine_diagonal_pts(&p, pts_matrix.borrow());
                 pts_matrix[i].push(p);
             }
         }
 
-        for (_, row) in pts_matrix.iter().enumerate() {
+        for (_, row) in pts_matrix.borrow().iter().enumerate() {
             for (_, col) in row.iter().enumerate() {
                 println!("{}", col);
             }
