@@ -7,46 +7,76 @@
 // @lc code=start
 
 /*
-    0 1 2 3 4 5 6 7 8 9 y
-    1 0 0 0 0 0 0 0 1 1
-    2 0 1 0 0 0 0 0 1 1 
-    3 0 0 1 0 0 1 1 1 1
-    4 0 0 1 0 0 1 1 1 1
-    5 0 0 0 1 0 1 1 1 1
-    6 0 0 0 0 1 1 1 1 1
-    7 0 1 1 1 1 1 1 1 1
-    8 0 1 1 1 1 1 1 1 1
-    9 0 0 0 0 1 1 1 1 1
+    ^
+    |
+    y
+    轴
 
-    x
-    Point(8, 8)的对角点有：[(1, 8), (3, 6), (6, 5), (7, 2)]
+    8    0 0 0 0 0 0 0 1 1
+    7    0 1 0 0 0 0 0 1 1 
+    6    0 0 1 0 0 1 1 1 1
+    5    0 0 1 0 0 1 1 1 1
+    4    0 0 0 1 0 1 1 1 1
+    3    0 0 0 0 1 1 1 1 1
+    2    0 1 1 1 1 1 1 1 1
+    1    0 1 1 1 1 1 1 1 1
+    0    0 0 0 0 1 1 1 1 1
+
+    原点 0 1 2 3 4 5 6 7 8 ->x轴
+
+    Point(7, 1)的对角点有：[(7, 8), (5, 6), (4, 3), (1, 2)]
 */
 
 use std::cell::{Ref, RefCell};
 
 pub struct Solution{}
 
-struct Point<'a> {
+struct Point {
     ch: char,
-    x: usize,
-    y: usize,
-    diagonal_pts: Vec<&'a Point<'a>>,
+    pos: (usize, usize),
+    diagonal_pts: Vec<(usize, usize)>,
     x_reach: i16,  // 从该point一直沿着x轴往左，一直到x_reach，都是'1'
     y_reach: i16   // 从该point一直沿着y轴往上，一直到y_reach，都是'1'
 }
 
-impl std::fmt::Display for Point<'_> {
+fn get_point_at(pts_matrix: Vec<Vec<Point>>, x: usize, y: usize) -> Point {
+    pts_matrix[pts_matrix.len()-1-y][x]
+}
+
+fn left_point(point: &Point, pts_matrix: Vec<Vec<Point>>) -> Option<Point> {
+    if point.pos.0 == 0 {
+        None
+    }
+    else {
+        Some(get_point_at(pts_matrix, point.pos.0-1, point.pos.1))
+    }
+}
+
+fn up_point(point: &Point, pts_matrix: Vec<Vec<Point>>) -> Option<Point> {
+    if point.pos.1 == pts_matrix.len() {
+        None
+    }
+    else {
+        Some(get_point_at(pts_matrix, point.pos.0, point.pos.1-1))
+    }
+}
+
+impl std::fmt::Display for Point {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}, {}", self.x, self.y)
+        write!(f, "{}, {}", self.pos.0, self.pos.1)
     }
 }
 
 impl Solution {
-    fn determine_x_reach(point: & Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
+    // 从point一路向左，连续的1一直到哪个x坐标为止（包含）
+    fn determine_x_reach(point: & Point, pts_matrix: Vec<Vec<Point>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
-            if point.y > 0 && pts_matrix[point.x][point.y-1].x_reach >= 0 { pts_matrix[point.x][point.y-1].x_reach }
-            else { point.y as i16 }
+            let lp = left_point(point, pts_matrix);
+            match lp {
+                Some(p) => if p.x_reach >= 0 { p.x_reach as i16 } else { point.pos.0 as i16 }
+                None => point.pos.0 as i16
+            }
         }
     }
 
