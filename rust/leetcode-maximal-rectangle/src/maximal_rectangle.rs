@@ -27,14 +27,14 @@
     Point(7, 1)的对角点有：[(7, 8), (5, 6), (4, 3), (1, 2)]
 */
 
-use std::cell::{RefCell};
+use std::cell::{Ref, RefCell};
 
 pub struct Solution{}
 
 struct Point {
     ch: char,
     pos: (usize, usize),
-    diagonal_pts: RefCell<Vec<(usize, usize)>>,
+    diagonal_pts: Vec<(usize, usize)>,
     x_reach: i16,  // 从该point一直沿着x轴往左，一直到x_reach，都是'1'
     y_reach: i16   // 从该point一直沿着y轴往上，一直到y_reach，都是'1'
 }
@@ -44,11 +44,11 @@ impl Point {
     fn y(&self) -> usize { self.pos.1 }
 }
 
-fn get_point_at(pts_matrix: Vec<Vec<Point>>, x: usize, y: usize) -> Point {
-    pts_matrix[pts_matrix.len()-1-y][x]
+fn get_point_at(pts_matrix: Ref<Vec<Vec<Point>>>, x: usize, y: usize) -> &Point {
+    &pts_matrix[pts_matrix.len()-1-y][x]
 }
 
-fn left_point(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Option<Point> {
+fn left_point(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Option<&Point> {
     if point.x() == 0 {
         None
     }
@@ -57,7 +57,7 @@ fn left_point(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Option<Point> {
     }
 }
 
-fn up_point(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Option<Point> {
+fn up_point(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Option<Point> {
     if point.y() == pts_matrix.len() {
         None
     }
@@ -74,7 +74,7 @@ impl std::fmt::Display for Point {
 
 impl Solution {
     // 从point一路向左，连续的1一直到哪个x坐标为止（包含）
-    fn determine_x_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
+    fn determine_x_reach(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             let lp = left_point(point, pts_matrix);
@@ -86,7 +86,7 @@ impl Solution {
     }
 
     // 从point一路向上，连续的1一直到哪个y坐标为止（包含）
-    fn determine_y_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
+    fn determine_y_reach(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             let up = up_point(point, pts_matrix);
@@ -98,7 +98,7 @@ impl Solution {
     }
 
     // 确定某个节点的对角点
-    fn determine_diagonal_pts(point: &Point, pts_matrix: Vec<Vec<Point>>) -> Vec<(usize, usize)> {
+    fn determine_diagonal_pts(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Vec<(usize, usize)> {
         let mut diagonal_pts: Vec<(usize, usize)> = vec![];
         let y_max = pts_matrix.len()-1;
         if point.x() == 0 && point.y() == y_max {
@@ -129,7 +129,7 @@ impl Solution {
                 p.x_reach = Solution::determine_x_reach(&p, pts_matrix.borrow());
                 p.y_reach = Solution::determine_y_reach(&p, pts_matrix.borrow());
                 p.diagonal_pts = Solution::determine_diagonal_pts(&p, pts_matrix.borrow());
-                pts_matrix[i].push(p);
+                pts_matrix.borrow_mut()[i].push(p);
             }
         }
 
