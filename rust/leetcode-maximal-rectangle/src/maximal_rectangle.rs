@@ -7,24 +7,18 @@
 // @lc code=start
 
 /*
-    ^
-    |
-    y
-    轴
 
-    8    0 0 0 0 0 0 0 1 1
-    7    0 1 0 0 0 0 0 1 1 
-    6    0 0 1 0 0 1 1 1 1
-    5    0 0 1 0 0 1 1 1 1
-    4    0 0 0 1 0 1 1 1 1
-    3    0 0 0 0 1 1 1 1 1
-    2    0 1 1 1 1 1 1 1 1
-    1    0 1 1 1 1 1 1 1 1
-    0    0 0 0 0 1 1 1 1 1
+        0 0 0 0 0 0 0 1 1
+        0 1 0 0 0 0 0 1 1 
+        0 0 1 0 0 1 1 1 1
+        0 0 1 0 0 1 1 1 1
+        0 0 0 1 0 1 1 1 1
+        0 0 0 0 1 1 1 1 1
+        0 1 1 1 1 1 1 1 1
+        0 1 1 1 1 1 1 1 1
+        0 0 0 0 1 1 1 1 1
 
-    原点 0 1 2 3 4 5 6 7 8  x轴->
-
-    Point(7, 1)的对角点有：[(7, 8), (5, 6), (4, 3), (1, 2)]
+    Point[7, 7]的对角点有：[(0, 7), (2, 5), (5, 4), (6, 1)]
 */
 
 pub struct Solution{}
@@ -33,64 +27,60 @@ struct Point {
     ch: char,
     pos: (usize, usize),
     diagonal_pts: Vec<(usize, usize)>,
-    x_reach: i16,  // 从该point一直沿着x轴往左，一直到x_reach，都是'1'
-    y_reach: i16   // 从该point一直沿着y轴往上，一直到y_reach，都是'1'
+    left_reach: i16,  // 从该point一直沿着x轴往左，一直到left_reach，都是'1'
+    up_reach: i16   // 从该point一直沿着y轴往上，一直到up_reach，都是'1'
 }
 
 impl Point {
-    fn x(&self) -> usize { self.pos.0 }
-    fn y(&self) -> usize { self.pos.1 }
-}
-
-fn get_point_at(pts_matrix: &Vec<Vec<Point>>, x: usize, y: usize) -> &Point {
-    &pts_matrix[pts_matrix.len()-1-y][x]
-}
-
-fn left_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a Point> {
-    if point.x() == 0 {
-        None
-    }
-    else {
-        Some(get_point_at(pts_matrix, point.x()-1, point.y()))
-    }
-}
-
-fn up_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a Point> {
-    if point.y() == pts_matrix.len() {
-        None
-    }
-    else {
-        Some(get_point_at(pts_matrix, point.x(), point.y()-1))
-    }
+    fn r(&self) -> usize { self.pos.0 }
+    fn c(&self) -> usize { self.pos.1 }
 }
 
 impl std::fmt::Display for Point {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}, {}", self.x(), self.y())
+        write!(f, "{}, {}", self.pos[0], self.pos[1])
+    }
+}
+
+fn left_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a Point> {
+    if point.c() == 0 {
+        None
+    }
+    else {
+        Some(pts_matrix[point.r()][point.c()-1])
+    }
+}
+
+fn up_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a Point> {
+    if point.r() == 0 {
+        None
+    }
+    else {
+        Some(pts_matrix[point.r()-1][point.c()])
     }
 }
 
 impl Solution {
-    // 从point一路向左，连续的1一直到哪个x坐标为止（包含）
-    fn determine_x_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
+    // 从point一路向左，连续的1一直到哪个col为止（包含）
+    fn determine_left_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             let lp = left_point(point, pts_matrix);
             match lp {
-                Some(p) => if p.x_reach >= 0 { p.x_reach as i16 } else { point.x() as i16 }
-                None => point.x() as i16
+                Some(p) => if p.left_reach >= 0 { p.left_reach as i16 } else { point.c() as i16 }
+                None => point.c() as i16
             }
         }
     }
 
-    // 从point一路向上，连续的1一直到哪个y坐标为止（包含）
-    fn determine_y_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
+    // 从point一路向上，连续的1一直到哪个row为止（包含）
+    fn determine_up_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             let up = up_point(point, pts_matrix);
             match up {
-                Some(p) => if p.y_reach >= 0 { p.y_reach as i16 } else { point.y() as i16 }
-                None => point.y() as i16
+                Some(p) => if p.up_reach >= 0 { p.up_reach as i16 } else { point.r() as i16 }
+                None => point.r() as i16
             }
         }
     }
@@ -99,17 +89,21 @@ impl Solution {
     fn determine_diagonal_pts(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Vec<(usize, usize)> {
         let mut diagonal_pts: Vec<(usize, usize)> = vec![];
         let y_max = pts_matrix.len()-1;
-        if point.x() == 0 && point.y() == y_max {
+        if point.r() == 0 && point.c() == 0 {
             if point.ch == '1' {
                 diagonal_pts.push(point.pos)
             }
 
         }
-        else if point.x() == 0 {
-            diagonal_pts.push(get_point_at(pts_matrix, 0, point.y_reach as usize).pos)
+        else if point.c() == 0 {
+            if point.up_reach >= 0 {
+                diagonal_pts.push(pts_matrix[point.up_reach][0])
+            }
         }
-        else if point.y() == y_max {
-            diagonal_pts.push(get_point_at(pts_matrix, point.x_reach as usize, y_max).pos)
+        else if point.r() == 0 {
+            if point.left_reach >= 0 {
+                diagonal_pts.push(pts_matrix[0][point.left_reach])
+            }
         }
         else {
 
