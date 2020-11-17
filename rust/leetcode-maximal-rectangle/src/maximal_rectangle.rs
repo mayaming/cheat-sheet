@@ -27,8 +27,6 @@
     Point(7, 1)的对角点有：[(7, 8), (5, 6), (4, 3), (1, 2)]
 */
 
-use std::cell::{Ref, RefCell};
-
 pub struct Solution{}
 
 struct Point {
@@ -44,11 +42,11 @@ impl Point {
     fn y(&self) -> usize { self.pos.1 }
 }
 
-fn get_point_at(pts_matrix: Ref<Vec<Vec<Point>>>, x: usize, y: usize) -> &Point {
+fn get_point_at(pts_matrix: &Vec<Vec<Point>>, x: usize, y: usize) -> &Point {
     &pts_matrix[pts_matrix.len()-1-y][x]
 }
 
-fn left_point(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Option<&Point> {
+fn left_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a Point> {
     if point.x() == 0 {
         None
     }
@@ -57,7 +55,7 @@ fn left_point(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Option<&Point>
     }
 }
 
-fn up_point(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Option<Point> {
+fn up_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a Point> {
     if point.y() == pts_matrix.len() {
         None
     }
@@ -74,7 +72,7 @@ impl std::fmt::Display for Point {
 
 impl Solution {
     // 从point一路向左，连续的1一直到哪个x坐标为止（包含）
-    fn determine_x_reach(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
+    fn determine_x_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             let lp = left_point(point, pts_matrix);
@@ -86,7 +84,7 @@ impl Solution {
     }
 
     // 从point一路向上，连续的1一直到哪个y坐标为止（包含）
-    fn determine_y_reach(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> i16 {
+    fn determine_y_reach(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> i16 {
         if point.ch == '0' { -1 }
         else {
             let up = up_point(point, pts_matrix);
@@ -98,7 +96,7 @@ impl Solution {
     }
 
     // 确定某个节点的对角点
-    fn determine_diagonal_pts(point: &Point, pts_matrix: Ref<Vec<Vec<Point>>>) -> Vec<(usize, usize)> {
+    fn determine_diagonal_pts(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Vec<(usize, usize)> {
         let mut diagonal_pts: Vec<(usize, usize)> = vec![];
         let y_max = pts_matrix.len()-1;
         if point.x() == 0 && point.y() == y_max {
@@ -120,20 +118,20 @@ impl Solution {
     }
 
     pub fn maximal_rectangle(matrix: Vec<Vec<char>>) -> i32 {
-        let pts_matrix: RefCell<Vec<Vec<Point>>> = RefCell::new(Vec::new());
+        let mut pts_matrix: Vec<Vec<Point>> = Vec::new();
 
         for (i, row) in matrix.iter().enumerate() {
-            pts_matrix.borrow_mut().push(vec![]);
+            pts_matrix.push(vec![]);
             for (j, col) in row.iter().enumerate() {
                 let mut p = Point{ch: *col, pos: (i, j), diagonal_pts: vec![], x_reach: -1, y_reach: -1};
-                p.x_reach = Solution::determine_x_reach(&p, pts_matrix.borrow());
-                p.y_reach = Solution::determine_y_reach(&p, pts_matrix.borrow());
-                p.diagonal_pts = Solution::determine_diagonal_pts(&p, pts_matrix.borrow());
-                pts_matrix.borrow_mut()[i].push(p);
+                p.x_reach = Solution::determine_x_reach(&p, &pts_matrix);
+                p.y_reach = Solution::determine_y_reach(&p, &pts_matrix);
+                p.diagonal_pts = Solution::determine_diagonal_pts(&p, &pts_matrix);
+                pts_matrix[i].push(p);
             }
         }
 
-        for (_, row) in pts_matrix.borrow().iter().enumerate() {
+        for (_, row) in pts_matrix.iter().enumerate() {
             for (_, col) in row.iter().enumerate() {
                 println!("{}", col);
             }
