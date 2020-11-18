@@ -88,25 +88,31 @@ impl Solution {
     // 确定某个节点的对角点
     fn determine_diagonal_pts(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Vec<(usize, usize)> {
         let mut diagonal_pts: Vec<(usize, usize)> = vec![];
-        let y_max = pts_matrix.len()-1;
+        let up_reach = point.up_reach
+        let left_reach = point.left_reach
         if point.r() == 0 && point.c() == 0 {
             if point.ch == '1' {
-                diagonal_pts.push(point.pos)
+                diagonal_pts.push(point.pos);
             }
-
         }
         else if point.c() == 0 {
-            if point.up_reach >= 0 {
-                diagonal_pts.push(pts_matrix[point.up_reach][0])
+            if up_reach >= 0 {
+                diagonal_pts.push(pts_matrix[up_reach][0]);
             }
         }
         else if point.r() == 0 {
-            if point.left_reach >= 0 {
-                diagonal_pts.push(pts_matrix[0][point.left_reach])
+            if left_reach >= 0 {
+                diagonal_pts.push(pts_matrix[0][left_reach]);
             }
         }
         else {
-
+            let buddy_pt = pts_matrix[point.r()-1][point.c()-1];
+            let buddy_diag_pts = buddy_pt.diagonal_pts;
+            for pt in buddy_diag_pts {
+                if pt[0] >= up_reach && pt[1] >= left_reach {
+                    diagonal_pts.push(pt)
+                }
+            }
         }
         diagonal_pts
     }
