@@ -38,7 +38,7 @@ impl Point {
 
 impl std::fmt::Display for Point {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}, {}", self.pos[0], self.pos[1])
+        write!(f, "{}, {}", self.pos.0, self.pos.1)
     }
 }
 
@@ -47,7 +47,7 @@ fn left_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&
         None
     }
     else {
-        Some(pts_matrix[point.r()][point.c()-1])
+        Some(&pts_matrix[point.r()][point.c()-1])
     }
 }
 
@@ -56,7 +56,7 @@ fn up_point<'a>(point: &'a Point, pts_matrix: &'a Vec<Vec<Point>>) -> Option<&'a
         None
     }
     else {
-        Some(pts_matrix[point.r()-1][point.c()])
+        Some(&pts_matrix[point.r()-1][point.c()])
     }
 }
 
@@ -88,8 +88,8 @@ impl Solution {
     // 确定某个节点的对角点
     fn determine_diagonal_pts(point: &Point, pts_matrix: &Vec<Vec<Point>>) -> Vec<(usize, usize)> {
         let mut diagonal_pts: Vec<(usize, usize)> = vec![];
-        let up_reach = point.up_reach
-        let left_reach = point.left_reach
+        let up_reach = point.up_reach;
+        let left_reach = point.left_reach;
         if point.r() == 0 && point.c() == 0 {
             if point.ch == '1' {
                 diagonal_pts.push(point.pos);
@@ -97,20 +97,21 @@ impl Solution {
         }
         else if point.c() == 0 {
             if up_reach >= 0 {
-                diagonal_pts.push(pts_matrix[up_reach][0]);
+                diagonal_pts.push(pts_matrix[up_reach as usize][0].pos);
             }
         }
         else if point.r() == 0 {
             if left_reach >= 0 {
-                diagonal_pts.push(pts_matrix[0][left_reach]);
+                println!("{}", pts_matrix.len());
+                diagonal_pts.push(pts_matrix[0][left_reach as usize].pos);
             }
         }
         else {
-            let buddy_pt = pts_matrix[point.r()-1][point.c()-1];
-            let buddy_diag_pts = buddy_pt.diagonal_pts;
+            let buddy_pt = &pts_matrix[point.r()-1][point.c()-1];
+            let buddy_diag_pts = &buddy_pt.diagonal_pts;
             for pt in buddy_diag_pts {
-                if pt[0] >= up_reach && pt[1] >= left_reach {
-                    diagonal_pts.push(pt)
+                if pt.0 as i16 >= up_reach && pt.1 as i16 >= left_reach {
+                    diagonal_pts.push(*pt);
                 }
             }
         }
@@ -123,9 +124,9 @@ impl Solution {
         for (i, row) in matrix.iter().enumerate() {
             pts_matrix.push(vec![]);
             for (j, col) in row.iter().enumerate() {
-                let mut p = Point{ch: *col, pos: (i, j), diagonal_pts: vec![], x_reach: -1, y_reach: -1};
-                p.x_reach = Solution::determine_x_reach(&p, &pts_matrix);
-                p.y_reach = Solution::determine_y_reach(&p, &pts_matrix);
+                let mut p = Point{ch: *col, pos: (i, j), diagonal_pts: vec![], left_reach: -1, up_reach: -1};
+                p.left_reach = Solution::determine_left_reach(&p, &pts_matrix);
+                p.up_reach = Solution::determine_up_reach(&p, &pts_matrix);
                 p.diagonal_pts = Solution::determine_diagonal_pts(&p, &pts_matrix);
                 pts_matrix[i].push(p);
             }
