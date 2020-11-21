@@ -21,6 +21,8 @@
     Point[7, 7]的对角点有：[(0, 7), (2, 5), (5, 4), (6, 1)]
 */
 
+use std::cmp::max;
+
 pub struct Solution{}
 
 struct Point {
@@ -96,13 +98,18 @@ impl Solution {
             }
         }
         else if point.c() == 0 {
-            if up_reach >= 0 {
+            if up_reach == point.r() as i16 {
+                diagonal_pts.push(point.pos)
+            }
+            else if up_reach >= 0 {
                 diagonal_pts.push(pts_matrix[up_reach as usize][0].pos);
             }
         }
         else if point.r() == 0 {
-            if left_reach >= 0 {
-                println!("{}", pts_matrix.len());
+            if left_reach == point.c() as i16 {
+                diagonal_pts.push(point.pos)
+            }
+            else if left_reach >= 0 {
                 diagonal_pts.push(pts_matrix[0][left_reach as usize].pos);
             }
         }
@@ -118,8 +125,17 @@ impl Solution {
         diagonal_pts
     }
 
+    fn maximal_rectangle_for_pt(point: &Point) -> i32 {
+        let mut max_size = 0;
+        for diag_pt_pos in point.diagonal_pts.iter() {
+            max_size = max(max_size, i32::abs(point.r() as i32 - diag_pt_pos.0 as i32)*i32::abs(point.c() as i32 - diag_pt_pos.1 as i32));
+        }
+        max_size
+    }
+
     pub fn maximal_rectangle(matrix: Vec<Vec<char>>) -> i32 {
         let mut pts_matrix: Vec<Vec<Point>> = Vec::new();
+        let mut max_size = 0;
 
         for (i, row) in matrix.iter().enumerate() {
             pts_matrix.push(vec![]);
@@ -128,16 +144,19 @@ impl Solution {
                 p.left_reach = Solution::determine_left_reach(&p, &pts_matrix);
                 p.up_reach = Solution::determine_up_reach(&p, &pts_matrix);
                 p.diagonal_pts = Solution::determine_diagonal_pts(&p, &pts_matrix);
+                max_size = max(max_size, Solution::maximal_rectangle_for_pt(&p));
                 pts_matrix[i].push(p);
             }
         }
 
+        /*
         for (_, row) in pts_matrix.iter().enumerate() {
             for (_, col) in row.iter().enumerate() {
                 println!("{}", col);
             }
         }
-        0
+        */
+        max_size
     }
 }
 
