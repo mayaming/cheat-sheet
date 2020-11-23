@@ -117,7 +117,7 @@ impl Solution {
             let buddy_pt = &pts_matrix[point.r()-1][point.c()-1];
             let buddy_diag_pts = &buddy_pt.diagonal_pts;
             for pt in buddy_diag_pts {
-                if pt.0 as i16 >= up_reach && pt.1 as i16 >= left_reach {
+                if (up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
                     diagonal_pts.push(*pt);
                 }
             }
@@ -128,7 +128,7 @@ impl Solution {
     fn maximal_rectangle_for_pt(point: &Point) -> i32 {
         let mut max_size = 0;
         for diag_pt_pos in point.diagonal_pts.iter() {
-            max_size = max(max_size, i32::abs(point.r() as i32 - diag_pt_pos.0 as i32)*i32::abs(point.c() as i32 - diag_pt_pos.1 as i32));
+            max_size = max(max_size, i32::abs(point.r() as i32 - diag_pt_pos.0 as i32 + 1)*i32::abs(point.c() as i32 - diag_pt_pos.1 as i32) + 1);
         }
         max_size
     }
@@ -145,6 +145,7 @@ impl Solution {
                 p.up_reach = Solution::determine_up_reach(&p, &pts_matrix);
                 p.diagonal_pts = Solution::determine_diagonal_pts(&p, &pts_matrix);
                 max_size = max(max_size, Solution::maximal_rectangle_for_pt(&p));
+                println!("point={:?}, diag={:?}, left_reach={}, up_reach={}", p.pos, p.diagonal_pts, p.left_reach, p.up_reach);
                 pts_matrix[i].push(p);
             }
         }
