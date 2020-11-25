@@ -92,6 +92,9 @@ impl Solution {
         let mut diagonal_pts: Vec<(usize, usize)> = vec![];
         let up_reach = point.up_reach;
         let left_reach = point.left_reach;
+        if point.ch == '1' {
+            diagonal_pts.push(point.pos)
+        }
         if point.r() == 0 && point.c() == 0 {
             if point.ch == '1' {
                 diagonal_pts.push(point.pos);
@@ -114,7 +117,14 @@ impl Solution {
             }
         }
         else {
-            let buddy_pt = &pts_matrix[point.r()-1][point.c()-1];
+            let buddy_pt = &pts_matrix[point.r()-1][point.c()];
+            let buddy_diag_pts = &buddy_pt.diagonal_pts;
+            for pt in buddy_diag_pts {
+                if (up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
+                    diagonal_pts.push(*pt);
+                }
+            }
+            let buddy_pt = &pts_matrix[point.r()][point.c()-1];
             let buddy_diag_pts = &buddy_pt.diagonal_pts;
             for pt in buddy_diag_pts {
                 if (up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
@@ -128,7 +138,7 @@ impl Solution {
     fn maximal_rectangle_for_pt(point: &Point) -> i32 {
         let mut max_size = 0;
         for diag_pt_pos in point.diagonal_pts.iter() {
-            max_size = max(max_size, i32::abs(point.r() as i32 - diag_pt_pos.0 as i32 + 1)*i32::abs(point.c() as i32 - diag_pt_pos.1 as i32) + 1);
+            max_size = max(max_size, (i32::abs(point.r() as i32 - diag_pt_pos.0 as i32) + 1) * (i32::abs(point.c() as i32 - diag_pt_pos.1 as i32) + 1));
         }
         max_size
     }
