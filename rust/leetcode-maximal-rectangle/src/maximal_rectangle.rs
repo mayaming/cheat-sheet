@@ -155,7 +155,7 @@ impl Solution {
                 p.up_reach = Solution::determine_up_reach(&p, &pts_matrix);
                 p.diagonal_pts = Solution::determine_diagonal_pts(&p, &pts_matrix);
                 max_size = max(max_size, Solution::maximal_rectangle_for_pt(&p));
-                println!("point={:?}, diag={:?}, left_reach={}, up_reach={}", p.pos, p.diagonal_pts, p.left_reach, p.up_reach);
+                // println!("point={:?}, diag={:?}, left_reach={}, up_reach={}", p.pos, p.diagonal_pts, p.left_reach, p.up_reach);
                 pts_matrix[i].push(p);
             }
         }
