@@ -21,7 +21,13 @@
     Point[7, 7]的对角点有：[(0, 7), (2, 5), (5, 4), (6, 1)]
 */
 
+extern crate tcmalloc;
+
 use std::cmp::max;
+use tcmalloc::TCMalloc;
+
+#[global_allocator]
+static GLOBAL: TCMalloc = TCMalloc;
 
 pub struct Solution{}
 
