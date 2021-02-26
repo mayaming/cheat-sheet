@@ -29,7 +29,7 @@ fn main() {
     println!("{}", max_size);
 
     let mut v: Vec<Vec<char>> = Vec::new();
-    for _ in 0..80 {
+    for _ in 0..150 {
         v.push(vec!['1', '1', '1', '1', '1']);
     }
     let max_size = maximal_rectangle::Solution::maximal_rectangle(v);

@@ -24,6 +24,8 @@
 extern crate tcmalloc;
 
 use std::cmp::max;
+use std::collections::HashSet;
+
 use tcmalloc::TCMalloc;
 
 #[global_allocator]
@@ -125,16 +127,19 @@ impl Solution {
         else {
             let buddy_pt = &pts_matrix[point.r()-1][point.c()];
             let buddy_diag_pts = &buddy_pt.diagonal_pts;
+            let mut pos_set = HashSet::new();
             for pt in buddy_diag_pts {
-                if (up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
+                if (!pos_set.contains(pt) && up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
                     diagonal_pts.push(*pt);
+                    pos_set.insert(pt);
                 }
             }
             let buddy_pt = &pts_matrix[point.r()][point.c()-1];
             let buddy_diag_pts = &buddy_pt.diagonal_pts;
             for pt in buddy_diag_pts {
-                if (up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
+                if (!pos_set.contains(pt) && up_reach >= 0 && pt.0 as i16 >= up_reach) && (left_reach >= 0 && pt.1 as i16 >= left_reach) {
                     diagonal_pts.push(*pt);
+                    pos_set.insert(pt);
                 }
             }
         }
