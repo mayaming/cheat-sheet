@@ -1,6 +1,10 @@
+mod vec;
+
 use std::collections::HashSet;
 
 fn main() {
+    vec::vec_2d();
+
     let mut names = HashSet::new();
     names.insert("James".to_string());
     names.insert("Ted".to_string());
