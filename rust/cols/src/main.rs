@@ -1,4 +1,5 @@
 mod vec;
+mod map;
 
 use std::collections::HashSet;
 
@@ -17,4 +18,6 @@ fn main() {
     pairs.insert((1, 2));
     pairs.insert((2, 3));
     println!("{:?} contains {:?}? {}, contains {:?}? {}", pairs, (1, 2), pairs.contains(&(1, 2)), (1, 3), pairs.contains(&(1, 3)));
+
+    map::map_basic();
 }
