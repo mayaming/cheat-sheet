@@ -34,6 +34,10 @@ pub fn map_basic() {
     let pt = Point{x:0, y:1};
     get_and_print(&pt_2_str, &pt);
 
+    let pt = Point{x:0, y:1};
+    pt_2_str.insert(pt, "y2");
+    get_and_print(&pt_2_str, &Point{x:0, y:1});
+    
     println!("**********end of map baisc demo*********");
 }
 

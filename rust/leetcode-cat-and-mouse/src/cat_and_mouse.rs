@@ -1,11 +1,10 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 // https://leetcode.com/problems/cat-and-mouse/
 
 pub struct Solution {} 
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 struct State {
     mouse_pos: i32,
     cat_pos: i32
@@ -18,9 +17,9 @@ impl std::fmt::Display for State {
 }
 
 impl State {
-    fn calc_result<'a>(&'a self, result_map: &'a mut HashMap<&'a State, i32>, graph: &Vec<Vec<i32>>) -> i32 {
+    fn calc_result(&self, result_map: &mut HashMap<State, i32>, graph: &Vec<Vec<i32>>) -> i32 {
         let mut result_next = -1;  // 额外增加一个状态-1，表示未确定
-        result_map[&self] = result_next;  // 曾经访问过当前节点，用于发现平局的情况 
+        result_map.insert(self.clone(), result_next);  // 曾经访问过当前节点，用于发现平局的情况 
     
         if self.mouse_pos == 0 {
             result_next = 1;
@@ -33,9 +32,11 @@ impl State {
             let cat_nexts = &graph[self.cat_pos as usize];
             
             for mouse_next in mouse_nexts {
+                let mouse_next = *mouse_next;
                 for cat_next in cat_nexts {
+                    let cat_next = *cat_next;
                     if cat_next != 0 {
-                        let state_next = State{mouse_pos: *mouse_next, cat_pos: *cat_next};
+                        let state_next = State{mouse_pos: mouse_next, cat_pos: cat_next};
 
                         if !result_map.contains_key(&state_next) {
                             self.calc_result(result_map, graph);
@@ -58,7 +59,7 @@ impl State {
             }
         }
 
-        result_map[self] = result_next;
+        result_map.insert(self.clone(), result_next);
         result_next
     }
 }

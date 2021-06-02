@@ -12,7 +12,7 @@ pub fn vec_2d() {
 
     for i in v {
         for j in i {
-            if j == 0 {
+            if *j == 0 {
                 println!("{}", j);
             }
         }
