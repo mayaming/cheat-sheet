@@ -12,6 +12,10 @@ impl std::fmt::Display for Point {
     }
 }
 
+fn default_rk() -> i32 {
+    -1
+}
+
 pub fn map_basic() {
     println!("**********start of map baisc demo*********");
     let mut city_2_rank = HashMap::new();
@@ -22,6 +26,7 @@ pub fn map_basic() {
     println!("rank for {} is {}", &city_name, city_2_rank.get(&city_name).unwrap_or(&0));
     let city_name = String::from("sanghai");
     println!("rank for {} is {}", &city_name, city_2_rank.get(&city_name).unwrap_or(&0));
+    println!("rank for {} is {}", &city_name, city_2_rank.get(&city_name).map(|r| *r).unwrap_or_else(|| default_rk()));
 
     for (key, value) in &city_2_rank {
         println!("{}: {}", key, value);
@@ -38,6 +43,7 @@ pub fn map_basic() {
     pt_2_str.insert(pt, "y2");
     get_and_print(&pt_2_str, &Point{x:0, y:1});
     
+    println!("get or else: {}", pt_2_str.get(&Point{x:9, y:9}).or_else(||Some(&"N/A")).unwrap());
     println!("**********end of map baisc demo*********");
 }
 

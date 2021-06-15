@@ -18,9 +18,15 @@ impl std::fmt::Display for State {
 
 impl State {
     fn calc_result(&self, result_map: &mut HashMap<State, i32>, graph: &Vec<Vec<i32>>) -> i32 {
+        println!("check for {} {}", self.mouse_pos, self.cat_pos);
         let mut result_next = -1;  // 额外增加一个状态-1，表示未确定
-        result_map.insert(self.clone(), result_next);  // 曾经访问过当前节点，用于发现平局的情况 
-    
+        
+        match result_map.get(self) {
+            Some(-1) => { result_map.insert(self.clone(), 0); return 0; }
+            Some(n) => { return *n; }
+            None => { result_map.insert(self.clone(), -1); }  // 曾经访问过当前节点，用于发现平局的情况 
+        }
+
         if self.mouse_pos == 0 {
             result_next = 1;
         }
@@ -33,33 +39,39 @@ impl State {
             
             for mouse_next in mouse_nexts {
                 let mouse_next = *mouse_next;
-                for cat_next in cat_nexts {
-                    let cat_next = *cat_next;
-                    if cat_next != 0 {
-                        let state_next = State{mouse_pos: mouse_next, cat_pos: cat_next};
-
-                        if !result_map.contains_key(&state_next) {
-                            self.calc_result(result_map, graph);
-                        }
-
-                        let n = *result_map.get(&state_next).unwrap();
-                        if n == -1 || n == 0 {
-                            if result_next == -1 || result_next == 2 {
-                                result_next = 0;
+                let mut mouse_result_next = -1;
+                if mouse_next == self.cat_pos {
+                    mouse_result_next = 2;
+                }
+                else {
+                    for cat_next in cat_nexts {
+                        let cat_next = *cat_next;
+                        if cat_next != 0 {
+                            let state_next = State{mouse_pos: mouse_next, cat_pos: cat_next};
+                            let n = result_map.get(&state_next).map(|r| *r).unwrap_or_else(|| state_next.calc_result(result_map, graph));
+                            match n {
+                                2 => { mouse_result_next = 2; break; }
+                                0 => { mouse_result_next = 0; }
+                                1 if mouse_result_next == -1 || mouse_result_next == 1 => { mouse_result_next = 1; }
+                                _ => { mouse_result_next = 0 }
                             }
-                        }
-                        else if n == 1 {
-                            result_next = 1;
-                        }
-                        else if n == 2 {
-                            result_next = 2;
+
+                            println!("    stat next = {} {}, mouse result next = {}", state_next.mouse_pos, state_next.cat_pos, mouse_result_next);
                         }
                     }
                 }
+                match mouse_result_next {
+                    1 => { result_next = 1; break; }
+                    0 => { result_next = 0; }
+                    2 if result_next == -1 => { result_next = 2; }
+                    _ => {}
+                }
+                // println!("  stat next = {} {}, result next = {}", self.mouse_pos, self.cat_pos, result_next);
             }
         }
 
         result_map.insert(self.clone(), result_next);
+        println!("state: {}, result: {}", self, result_next);
         result_next
     }
 }

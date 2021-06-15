@@ -1,3 +1,5 @@
+mod option;
+
 fn main() {
     println!("Hello, world!");
     
@@ -13,4 +15,6 @@ fn main() {
     for i in 0..cities.len() {
         println!("{}", cities[i]);
     }
+
+    option::option_demo();
 }
