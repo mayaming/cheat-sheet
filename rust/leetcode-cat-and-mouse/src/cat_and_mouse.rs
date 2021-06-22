@@ -8,7 +8,14 @@ pub struct Solution {}
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct State {
     mouse_pos: i32,
-    cat_pos: i32
+    cat_pos: i32,
+    idx: i32
+}
+
+impl State {
+    fn new(mouse_pos: i32, cat_pos: i32) -> State {
+        State{mouse_pos: mouse_pos, cat_pos: cat_pos, idx: mouse_pos * 100 + cat_pos}
+    }
 }
 
 impl std::fmt::Display for State {
