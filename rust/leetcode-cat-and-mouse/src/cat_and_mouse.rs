@@ -5,22 +5,47 @@ use std::collections::HashSet;
 
 pub struct Solution {} 
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 struct State {
     mouse_pos: i32,
     cat_pos: i32,
-    idx: i32
+    idx: i32,
+    result: i32,
+    from: HashSet<i32>,
+    to: HashSet<i32>
 }
 
 impl State {
     fn new(mouse_pos: i32, cat_pos: i32) -> State {
-        State{mouse_pos: mouse_pos, cat_pos: cat_pos, idx: mouse_pos * 100 + cat_pos}
+        let result = if mouse_pos == 0 { 1 } else { if mouse_pos == cat_pos { 2 } else { -1 } };
+        State{mouse_pos: mouse_pos, cat_pos: cat_pos, idx: mouse_pos * 100 + cat_pos, result: result, from: HashSet::new(), to: HashSet::new()}
     }
 }
 
 impl std::fmt::Display for State {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{} {}", self.mouse_pos, self.cat_pos)
+    }
+}
+
+impl State {
+    fn check_moves(&self, graph: &Vec<Vec<i32>>, states: &HashMap<i32, &State>) -> HashSet<i32> {
+        let mut new_states = HashSet::new();
+        let mouse_nexts = &graph[self.mouse_pos as usize];
+        let cat_nexts = &graph[self.cat_pos as usize];
+        for mouse_next in mouse_nexts {
+            for cat_next in cat_nexts {
+                if *cat_next != 0 {
+                    let state_next = State::new(*mouse_next, *cat_next);
+                    if !states.contains_key(&state_next.idx) {
+                        new_states.insert(state_next.idx);
+                        state_next.from.insert(self.idx);
+                        self.to.insert(state_next.idx);
+                    }
+                }
+            }
+        }
+        new_states
     }
 }
 
@@ -68,7 +93,44 @@ impl std::fmt::Display for Path {
     }
 }
 
+struct StateRel {
+    states: HashMap<i32, State>,
+    forward: HashMap<i32, HashSet<i32>>,
+    reverse: HashMap<i32, HashSet<i32>>
+}
+
+impl StateRel {
+    fn new() -> StateRel {
+        StateRel{states: HashMap::new(), forward: HashMap::new(), reverse: HashMap::new()}
+    }
+
+    fn add(&self, from: &State, to: &State) -> () {
+        if !self.forward.contains_key(&from.idx) {
+            self.forward.insert(from.idx, HashSet::new());
+        }
+        self.forward.get(&from.idx).unwrap().insert(to.idx);
+
+        if !self.reverse.contains_key(&to.idx) {
+            self.reverse.insert(to.idx, HashSet::new());
+        }
+        self.forward.get(&to.idx).unwrap().insert(from.idx);
+    }
+}
+
 impl State {
+    fn calc_result2(&self, graph: &Vec<Vec<i32>>, state_rel: &StateRel) -> () {
+        let mouse_nexts = &graph[self.mouse_pos as usize];
+        let cat_nexts = &graph[self.cat_pos as usize];
+        for mouse_next in mouse_nexts {
+            for cat_next in cat_nexts {
+                if *cat_next != 0 {
+                    let state_next = State::new(*mouse_next, *cat_next);
+                    state_rel.add(self, &state_next);
+                }
+            }
+        }
+    }
+
     fn calc_result(&self, result_map: &mut HashMap<State, i32>, graph: &Vec<Vec<i32>>, path: &mut Path, prepare: bool, depth: usize, debug: bool) -> i32 {
         if debug && !prepare {
             println!("{}check for {}, path = {}", "  ".repeat(depth), self, path);
